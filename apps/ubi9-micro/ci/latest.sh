@@ -1,8 +1,8 @@
 #!/usr/bin/env bash
 channel=$1
-version=$(curl -sL "https://registry.access.redhat.com/v2/ubi9-micro/tags/list?ordering=name&name=$channel" | jq --raw-output --arg s "$channel" '.tags[] | select(. | contains($s))' 2>/dev/null | sort -r | head -n1)
+version=$(curl -s "https://registry.hub.docker.com/v2/repositories/redhat/ubi9/tags?ordering=name&name=$channel" | jq --raw-output --arg s "$channel" '.results[] | select(.name | contains($s)) | .name' 2>/dev/null | head -n1)
 version="${version#*v}"
 version="${version#*release-}"
 version="${version%_*}"
-version="${version%-source*}"
+version="${version%-*}"
 printf "%s" "${version}"
