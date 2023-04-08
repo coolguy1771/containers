@@ -69,7 +69,6 @@ RUN set -eux; \
     sed -i "s/^jdk\.tls\.disabledAlgorithms=/jdk.tls.disabledAlgorithms=$disabledAlgorithms/" \
         /usr/share/crypto-policies/FIPS/java.txt;
 
-
 ENV TINI_VERSION v0.19.0
 ADD https://github.com/krallin/tini/releases/download/${TINI_VERSION}/tini /tini
 RUN chmod +x /tini && mv /tini /sbin/tini

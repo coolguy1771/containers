@@ -31,7 +31,7 @@ COPY --from=build --chown=0:0 /etc/ssl /etc/ssl
 
 # copy tini and envsubst from ubi9
 COPY --from=build --chown=0:0 /sbin/tini /sbin/tini
-COPY --from=build --chown=0:0 /usr/bin/envsubst /usr/bin/envsubst
+COPY --from=build --chown=0:0 /usr/local/bin/envsubst /usr/local/bin/envsubst
 
 ENV container oci
 ENV PATH /usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
