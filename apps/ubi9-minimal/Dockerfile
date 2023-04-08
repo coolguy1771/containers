@@ -21,7 +21,7 @@ RUN \
 FROM registry.access.redhat.com/ubi9-minimal:${VERSION}
 
 WORKDIR /app
-COPY /apps/ubi-minimal/scripts /dsop-fix/
+COPY /apps/ubi9-minimal/scripts /dsop-fix/
 
 # Be careful when adding packages because this will ultimately be built on a licensed RHEL host,
 # which enables full RHEL repositories and could allow for installation of packages that would
@@ -33,7 +33,12 @@ RUN echo "[main]" >> /etc/dnf/dnf.conf && \
     echo Update packages and install DISA STIG fixes && \
     microdnf repolist && \
     microdnf --setopt install_weak_deps=0 update -y && \
-    microdnf install -y crypto-policies-scripts && \
+    microdnf install -y crypto-policies-scripts shadow-utils && \
+    groupadd -g 5568 kah &&\
+    useradd -g kah -M -u 5568 kah && \
+    mkdir -p /config &&\
+    chown -R kah:kah /config &&\
+    chmod -R 775 /config &&\
     # Do not use loops to iterate through shell scripts, this allows for scripts to fail
     # but the build to still be successful. Be explicit when executing scripts and ensure
     # that all scripts have "set -e" at the top of the bash file!
@@ -64,16 +69,10 @@ RUN set -eux; \
     sed -i "s/^jdk\.tls\.disabledAlgorithms=/jdk.tls.disabledAlgorithms=$disabledAlgorithms/" \
         /usr/share/crypto-policies/FIPS/java.txt;
 
-RUN groupadd -g 5568 kah \
-      && useradd -g kah -M -u 5568 kah \
-      && \
-      mkdir -p /config \
-      && chown -R kah:kah /config \
-      && chmod -R 775 /config
 
 ENV TINI_VERSION v0.19.0
 ADD https://github.com/krallin/tini/releases/download/${TINI_VERSION}/tini /tini
-RUN chmod +x /tini
+RUN chmod +x /tini && mv /tini /sbin/tini
 
 ENV container oci
 ENV PATH /usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
