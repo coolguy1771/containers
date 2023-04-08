@@ -1,5 +1,5 @@
 ARG VERSION
-FROM ghcr.io/coolguy1771/ubi9:9.1.0 as build
+FROM ghcr.io/coolguy1771/ubi9:9.1.0-1782 as build
 
 FROM registry.access.redhat.com/ubi9-micro:${VERSION}
 
