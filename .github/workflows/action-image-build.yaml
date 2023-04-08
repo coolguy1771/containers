@@ -41,6 +41,9 @@
       name: Build and test
       runs-on: ubuntu-latest
       if: inputs.imagesToBuild != '' && inputs.imagesToBuild != '[]'
+      permissions:
+        packages: write
+        id-token: write
       strategy:
         matrix:
           image: ["${{ fromJson(inputs.imagesToBuild) }}"]
