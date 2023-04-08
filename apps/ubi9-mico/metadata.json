@@ -1,0 +1,18 @@
+{
+  "app": "ubi9-micro",
+  "base": true,
+  "channels": [
+    {
+      "name": "9.1",
+      "platforms": [
+        "linux/amd64",
+        "linux/arm64"
+      ],
+      "stable": true,
+      "tests": {
+        "enabled": true,
+        "type": "cli"
+      }
+    }
+  ]
+}
