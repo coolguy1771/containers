@@ -33,9 +33,10 @@ RUN apk update && \
       linux-headers \
       make \
       musl-dev \
+      curl \
       perl  && \
     rm -rf /var/cache/apk/* && \
-    curl -o /openssl.tar.gz https://www.openssl.org/source/openssl-${OPENSSL_VERSION}.tar.gz
+    curl -o /openssl.tar.gz https://www.openssl.org/source/openssl-3.0.8.tar.gz
 
 WORKDIR /usr/local/src/openssl
 
