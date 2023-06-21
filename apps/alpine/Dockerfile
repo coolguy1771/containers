@@ -18,7 +18,7 @@ RUN \
     && go install -ldflags="-s -w" github.com/drone/envsubst/cmd/envsubst@latest \
     && upx /go/bin/envsubst
 
-FROM public.ecr.aws/docker/library/alpine:${VERSION} as openssl-build
+FROM public.ecr.aws/docker/library/alpine:${VERSION} as build-openssl
 ARG VERSION
 ARG CHANNEL
 ARG TARGETPLATFORM
@@ -61,7 +61,7 @@ RUN tar -zxf /openssl.tar.gz -C /usr/local/src/openssl --strip-components=1 && \
       enable-fips \
       enable-ec_nistp_64_gcc_128 \
       -Wa,--noexecstack && \
-    make && \
+    make -j$(nproc) && \
     make install && \
     make install_fips && \
     openssl fipsinstall -out /etc/ssl/fipsmodule.cnf -module /usr/lib/ossl-modules/fips.so
@@ -123,6 +123,5 @@ RUN update-ca-certificates && \
     && rm -rf /tmp/*
 
 VOLUME ["/config"]
-COPY ./apps/alpine/scripts /scripts
 COPY --from=builder /go/bin/envsubst /usr/local/bin/envsubst
 ENTRYPOINT ["/sbin/tini", "--"]
