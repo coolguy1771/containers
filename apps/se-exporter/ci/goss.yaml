@@ -1,0 +1,4 @@
+---
+file:
+  /usr/bin/se-exporter:
+    exists: true
