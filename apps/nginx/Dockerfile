@@ -1,9 +1,8 @@
-# multi-stage build for dockerized nginx
+FROM ghcr.io/coolguy1771/alpine:3.18.4 AS nginx
+
 ARG TARGETPLATFORM
 ARG VERSION
 ARG CHANNEL
-# set up nginx build container
-FROM ghcr.io/coolguy1771/alpine:3.18.4 AS nginx
 
 # install dependencies
 RUN apk add --update-cache \
@@ -24,11 +23,10 @@ RUN curl -L -O "https://cfhcable.dl.sourceforge.net/project/pcre/pcre/${PCRE_VER
     && tar xzf "/src/pcre/pcre-${PCRE_VER}.tar.gz"
 
 # download openssl
-ARG OPENSSL_VER=openssl-3.1.2
+ARG OPENSSL_VER=openssl-3.1.3
 WORKDIR /src/openssl
 RUN git clone -b "${OPENSSL_VER}" git://git.openssl.org/openssl.git /src/openssl
-ARG CORE_COUNT=1
-RUN ./config && make -j"${CORE_COUNT}"
+RUN ./config && make -j$(nproc)
 
 # download zlib
 WORKDIR /src/zlib
