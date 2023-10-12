@@ -1,4 +1,4 @@
-#! /usr/bin/env python3
+#!/usr/bin/env python3
 
 import sys
 
@@ -84,6 +84,7 @@ if __name__ == "__main__":
             "app": name,
             "channel": channel,
             "tags": [app["chan_tag_rolling"], app["chan_tag_version"]],
+            "platforms": cfg["platforms"],
             "version": app["chan_upstream_version"],
         }
         out["manifestsToBuild"].append(manifest)
