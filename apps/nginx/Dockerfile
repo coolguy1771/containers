@@ -1,4 +1,4 @@
-FROM ghcr.io/coolguy1771/alpine:3.18.4 AS nginx
+FROM ghcr.io/coolguy1771/alpine:3.18.4 as builder
 
 ARG TARGETPLATFORM
 ARG VERSION
@@ -11,9 +11,11 @@ RUN apk add --update-cache \
     gcc \
     git \
     linux-headers \
+    build-base \
     make \
     perl \
     tar \
+    cmake \
     upx
 
 # download pcre library
@@ -25,7 +27,7 @@ RUN curl -L -O "https://cfhcable.dl.sourceforge.net/project/pcre/pcre/${PCRE_VER
 # download openssl
 ARG OPENSSL_VER=openssl-3.1.3
 WORKDIR /src/openssl
-RUN git clone -b "${OPENSSL_VER}" git://git.openssl.org/openssl.git /src/openssl
+RUN git clone -j$(nproc) -b "${OPENSSL_VER}" git://git.openssl.org/openssl.git /src/openssl
 RUN ./config && make -j$(nproc)
 
 # download zlib
@@ -36,11 +38,14 @@ RUN curl -sL -O "https://www.zlib.net/zlib-${ZLIB_VER}.tar.gz" \
 
 # download brotli module
 WORKDIR /src/ngx_brotli
-RUN git clone https://github.com/google/ngx_brotli.git /src/ngx_brotli \
-    && git submodule update --init
+RUN git clone -j$(nproc) --recurse-submodule https://github.com/google/ngx_brotli.git /src/ngx_brotli && \
+    cd /src/ngx_brotli/deps/brotli && \
+    mkdir out && cd out && \
+    cmake -DCMAKE_BUILD_TYPE=Release -DBUILD_SHARED_LIBS=OFF -DCMAKE_C_FLAGS="-Ofast -march=native -mtune=native -flto -funroll-loops -ffunction-sections -fdata-sections -Wl,--gc-sections" -DCMAKE_CXX_FLAGS="-Ofast -march=native -mtune=native -flto -funroll-loops -ffunction-sections -fdata-sections -Wl,--gc-sections" -DCMAKE_INSTALL_PREFIX=./installed .. && \
+    cmake --build . --config Release --target brotlienc
 
 # download fancy-index module
-RUN git clone https://github.com/aperezdc/ngx-fancyindex.git /src/ngx-fancyindex
+RUN git clone -j$(nproc) https://github.com/aperezdc/ngx-fancyindex.git /src/ngx-fancyindex
 
 # download nginx source
 WORKDIR /src/nginx
@@ -80,7 +85,7 @@ RUN ./configure --prefix=/usr/share/nginx \
                 --without-mail_smtp_module \
                 --with-cc-opt="-O2 -flto -ffunction-sections -fdata-sections -fPIE -fstack-protector-all -D_FORTIFY_SOURCE=2 -Wformat -Werror=format-security" \
                 --with-ld-opt="-Wl,--gc-sections -s -static -static-libgcc" \
-    && make -j"${CORE_COUNT}" \
+    && make -j$(nproc) \
     && make install
 
 # compress the nginx binary
@@ -104,13 +109,13 @@ FROM gcr.io/distroless/static:nonroot
 USER nonroot
 
 # copy files over
-COPY --from=nginx --chown=nonroot:nonroot /etc/nginx /etc/nginx
-COPY --from=nginx --chown=nonroot:nonroot /tmp/nginx.pid /tmp/nginx.pid
-COPY --from=nginx --chown=nonroot:nonroot /tmp/nginx /tmp/nginx
-COPY --from=nginx --chown=nonroot:nonroot /usr/sbin/nginx /usr/sbin/nginx
-COPY --from=nginx --chown=nonroot:nonroot /usr/share/nginx/fastcgi_temp /usr/share/nginx/fastcgi_temp
-COPY --from=nginx --chown=nonroot:nonroot /var/log/nginx /var/log/nginx
-COPY --from=nginx --chown=nonroot:nonroot /var/www/html /var/www/html
+COPY --from=builder --chown=nonroot:nonroot /etc/nginx /etc/nginx
+COPY --from=builder --chown=nonroot:nonroot /tmp/nginx.pid /tmp/nginx.pid
+COPY --from=builder --chown=nonroot:nonroot /tmp/nginx /tmp/nginx
+COPY --from=builder --chown=nonroot:nonroot /usr/sbin/nginx /usr/sbin/nginx
+COPY --from=builder --chown=nonroot:nonroot /usr/share/nginx/fastcgi_temp /usr/share/nginx/fastcgi_temp
+COPY --from=builder --chown=nonroot:nonroot /var/log/nginx /var/log/nginx
+COPY --from=builder --chown=nonroot:nonroot /var/www/html /var/www/html
 COPY --chown=nonroot:nonroot /apps/nginx/html/index.html /var/www/html/index.html
 
 # listen on an unprivileged port
