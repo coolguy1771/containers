@@ -28,7 +28,6 @@ RUN curl -L -O "https://cfhcable.dl.sourceforge.net/project/pcre/pcre/${PCRE_VER
 ARG OPENSSL_VER=openssl-3.1.3
 WORKDIR /src/openssl
 RUN git clone -j$(nproc) -b "${OPENSSL_VER}" git://git.openssl.org/openssl.git /src/openssl
-RUN ./config && make -j$(nproc)
 
 # download zlib
 WORKDIR /src/zlib
