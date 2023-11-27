@@ -1,13 +1,17 @@
 {
+  "$schema": "https://docs.renovatebot.com/renovate-schema.json",
   "extends": [
-    "config:base",
+    "config:recommended",
     "docker:enableMajor",
     ":disableRateLimiting",
     ":dependencyDashboard",
     ":semanticCommits",
-    ":automergeDigest"
+    ":automergeDigest",
+    ":automergeBranch",
+    "helpers:pinGitHubActionDigests"
   ],
   "platform": "github",
+  "platformCommit": true,
   "onboarding": false,
   "requireConfig": "optional",
   "dependencyDashboardTitle": "Renovate Dashboard 🤖",
