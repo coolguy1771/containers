@@ -5,8 +5,7 @@
     {
       "name": "9",
       "platforms": [
-        "linux/amd64",
-        "linux/arm64"
+        "linux/amd64"
       ],
       "stable": true,
       "tests": {
