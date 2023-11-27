@@ -1,4 +1,23 @@
-# Container images
+<!---
+NOTE: AUTO-GENERATED FILE
+to edit this file, instead edit its template at: ./github/scripts/templates/README.md.j2
+-->
+<div align="center">
+
+
+## Containers
+
+_An opinionated collection of container images_
+
+</div>
+
+<div align="center">
+
+![GitHub Repo stars](https://img.shields.io/github/stars/coolguy1771/containers?style=for-the-badge)
+![GitHub forks](https://img.shields.io/github/forks/coolguy1771/containers?style=for-the-badge)
+![GitHub Workflow Status (with event)](https://img.shields.io/github/actions/workflow/status/coolguy1771/containers/release-scheduled.yaml?style=for-the-badge&label=Scheduled%20Release)
+
+</div>
 
 Welcome to our container images, if looking for a container start by [browsing the container packages](https://github.com/coolguy1771?tab=packages&repo_name=containers).
 
@@ -6,20 +25,20 @@ Welcome to our container images, if looking for a container start by [browsing t
 
 The goal of this project is to support [semantically versioned](https://semver.org/), [rootless](https://rootlesscontaine.rs/), and [multiple architecture](https://www.docker.com/blog/multi-arch-build-and-images-the-simple-way/) containers for various applications.
 
-We also try to adhere to a [KISS principle](https://en.wikipedia.org/wiki/KISS_principle), logging to stdout, [one process per container](https://testdriven.io/tips/59de3279-4a2d-4556-9cd0-b444249ed31e/), no [s6-overlay](https://github.com/just-containers/s6-overlay) and all images are built on top of [Alpine](https://hub.docker.com/_/alpine) or [UBI](https://hub.docker.com/r/redhat/ubi9).
+We also try to adhere to a [KISS principle](https://en.wikipedia.org/wiki/KISS_principle), logging to stdout, [one process per container](https://testdriven.io/tips/59de3279-4a2d-4556-9cd0-b444249ed31e/), no [s6-overlay](https://github.com/just-containers/s6-overlay) and all images are built on top of [Alpine](https://hub.docker.com/_/alpine) or [Ubuntu](https://hub.docker.com/_/ubuntu).
 
 ## Tag immutability
 
 The containers built here do not use immutable tags, as least not in the more common way you have seen from [linuxserver.io](https://fleet.linuxserver.io/) or [Bitnami](https://bitnami.com/stacks/containers).
 
-We take do take a similar approach but instead of appending a `-ls69` or `-r420` prefix to the tag we instead insist on pinning to the sha256 digest of the image, while this is not as pretty it is just as functional in making the images immutable.
+We do take a similar approach but instead of appending a `-ls69` or `-r420` prefix to the tag we instead insist on pinning to the sha256 digest of the image, while this is not as pretty it is just as functional in making the images immutable.
 
 | Container                                          | Immutable |
 |----------------------------------------------------|-----------|
-| `ghcr.io/coolguy1771/ubi9:rolling`                 | ❌         |
-| `ghcr.io/coolguy1771/ubi9:9.1.0`                   | ❌         |
-| `ghcr.io/coolguy1771/ubi9:rolling@sha256:8053...`  | ✅         |
-| `ghcr.io/coolguy1771/ubi9:9.1.0@sha256:8053...`    | ✅         |
+| `ghcr.io/coolguy1771/sonarr:rolling`                   | ❌         |
+| `ghcr.io/coolguy1771/sonarr:3.0.8.1507`                | ❌         |
+| `ghcr.io/coolguy1771/sonarr:rolling@sha256:8053...`    | ✅         |
+| `ghcr.io/coolguy1771/sonarr:3.0.8.1507@sha256:8053...` | ✅         |
 
 _If pinning an image to the sha256 digest, tools like [Renovate](https://github.com/renovatebot/renovate) support updating the container on a digest or application version change._
 
@@ -41,6 +60,16 @@ Some applications do not support defining configuration via environment variable
 ## Configuration volume
 
 For applications that need to have persistent configuration data the config volume is hardcoded to `/config` inside the container. This is not able to be changed in most cases.
+
+## Available Images
+
+Each Image will be built with a `rolling` tag, along with tags specific to it's version. Available Images Below
+
+Container | Channel | Image | Latest Tags
+--- | --- | --- | ---
+[nginx]() | 1.25 | ghcr.io/coolguy1771/nginx |
+[se-exporter]() | master | ghcr.io/coolguy1771/se-exporter |
+
 
 ## Contributing
 
@@ -81,7 +110,6 @@ Containers here can be **deprecated** at any point, this could be for any reason
 4. The **maintenance burden** of keeping the container here **is too bothersome**
 
 **Note**: Deprecated containers will remained published to this repo for 6 months after which they will be pruned.
-
 ## Credits
 
 A lot of inspiration and ideas are thanks to the hard work of [hotio.dev](https://hotio.dev/) and [linuxserver.io](https://www.linuxserver.io/) contributors.
