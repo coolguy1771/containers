@@ -1,7 +1,7 @@
 ARG VERSION
-FROM ghcr.io/coolguy1771/ubi9:9.1.0-1782 as build
+FROM ghcr.io/coolguy1771/ubi9:9.3-6 as build
 
-FROM registry.access.redhat.com/ubi9-micro:${VERSION}
+FROM docker.io/redhat/ubi9-micro:${VERSION}
 
 ARG VERSION
 ARG CHANNEL

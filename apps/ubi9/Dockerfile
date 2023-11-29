@@ -18,7 +18,7 @@ RUN \
     && go install -ldflags="-s -w" github.com/drone/envsubst/cmd/envsubst@latest \
     && upx --ultra-brute /go/bin/envsubst
 
-FROM registry.access.redhat.com/ubi9:${VERSION}
+FROM docker.io/redhat/ubi9:${VERSION}
 ARG CHANNEL
 ARG TARGETPLATFORM
 ENV TARGETPLATFORM=${TARGETPLATFORM:-linux/amd64}
