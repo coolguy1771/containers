@@ -1,4 +1,4 @@
-FROM ghcr.io/coolguy1771/alpine:3.18.4 as builder
+FROM ghcr.io/coolguy1771/alpine:3.18.5 as builder
 
 ARG TARGETPLATFORM
 ARG VERSION
