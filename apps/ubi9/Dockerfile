@@ -1,5 +1,5 @@
 ARG VERSION
-FROM public.ecr.aws/docker/library/alpine:3.18 as builder
+FROM public.ecr.aws/docker/library/alpine:3.20 as builder
 ARG VERSION
 ARG TARGETOS
 ARG TARGETARCH
