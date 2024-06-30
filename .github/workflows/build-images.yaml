@@ -1,4 +1,5 @@
 ---
+# yaml-language-server: $schema=https://json.schemastore.org/github-workflow.json
 name: "Image Build"
 
 on:
@@ -7,11 +8,11 @@ on:
       appsToBuild:
         required: false
         type: string
-        default: ''
+        default: ""
       channelsToBuild:
         required: false
         type: string
-        default: ''
+        default: ""
       pushImages:
         required: false
         default: false
@@ -27,7 +28,7 @@ on:
         description: Force rebuild
     secrets:
       BOT_APP_ID:
-        description: The ID of the GitHub App
+        description: The App ID of the GitHub App
         required: true
       BOT_APP_PRIVATE_KEY:
         description: The private key of the GitHub App
@@ -40,20 +41,24 @@ jobs:
     outputs:
       matrices: ${{ steps.prepare-matrices.outputs.matrices }}
     steps:
+      - name: Lowercase repository owner
+        shell: bash
+        run: echo "LOWERCASE_REPO_OWNER=${GITHUB_REPOSITORY_OWNER,,}" >> $GITHUB_ENV
+
       - name: Generate Token
-        uses: actions/create-github-app-token@ad38cffc07bac6e3857755914c4c88bfd2db4da4 # v1.10.2
+        uses: actions/create-github-app-token@v1
         id: app-token
         with:
           app-id: "${{ secrets.BOT_APP_ID }}"
           private-key: "${{ secrets.BOT_APP_PRIVATE_KEY }}"
 
       - name: Checkout
-        uses: actions/checkout@692973e3d937129bcbf40652eb9f2f61becf3332 # v4.1.7
+        uses: actions/checkout@v4
         with:
           token: "${{ steps.app-token.outputs.token }}"
 
       - name: Setup Python
-        uses: actions/setup-python@82c7e631bb3cdc910f68e0081d67478d79c6982d # v5.1.0
+        uses: actions/setup-python@v5
         with:
           python-version: 3.x
           cache: pip
@@ -88,14 +93,23 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        image: ["${{ fromJSON(needs.prepare.outputs.matrices).imagePlatforms }}"]
+        image:
+          ["${{ fromJSON(needs.prepare.outputs.matrices).imagePlatforms }}"]
+    permissions:
+      contents: read
+      packages: write
     steps:
+      - name: Lowercase repository owner
+        shell: bash
+        run: echo "LOWERCASE_REPO_OWNER=${GITHUB_REPOSITORY_OWNER,,}" >> $GITHUB_ENV
+
       - name: Log Matrix Input
         shell: bash
         run: |
           cat << EOF
           ${{ toJSON(matrix.image)}}
           EOF
+
       - name: Validate Matrix Input
         shell: bash
         run: |
@@ -127,23 +141,22 @@ jobs:
           echo "${{ matrix.image.version }}" | grep -E "[a-zA-Z0-9_\.\-]+" || "Image Version is invalid"
 
       - name: Generate Token
-        uses: actions/create-github-app-token@ad38cffc07bac6e3857755914c4c88bfd2db4da4 # v1.10.2
+        uses: actions/create-github-app-token@v1
         id: app-token
         with:
           app-id: "${{ secrets.BOT_APP_ID }}"
           private-key: "${{ secrets.BOT_APP_PRIVATE_KEY }}"
 
       - name: Checkout
-        uses: actions/checkout@692973e3d937129bcbf40652eb9f2f61becf3332 # v4.1.7
+        uses: actions/checkout@v4
         with:
           token: "${{ steps.app-token.outputs.token }}"
-          fetch-depth: 1
 
       - name: Setup Docker Buildx
-        uses: docker/setup-buildx-action@d70bba72b1f3fd22344832f00baa16ece964efeb # v3.3.0
+        uses: docker/setup-buildx-action@v3
 
       - name: Login to GitHub Container Registry
-        uses: docker/login-action@0d4c9c5ea7693da7b068278f7b52bda2a190a446 # v3.2.0
+        uses: docker/login-action@v3
         with:
           registry: ghcr.io
           username: "${{ github.actor }}"
@@ -151,33 +164,34 @@ jobs:
 
       - name: Setup Goss
         if: ${{ matrix.image.tests_enabled }}
-        uses: e1himself/goss-installation-action@fbb6fb55d3e59c96045b2500eeb8ce0995d99ac1 # v1.2.1
+        uses: e1himself/goss-installation-action@v1
         with:
-          version: v0.4.4
+          version: latest
 
       - name: Prepare Build Outputs
         id: prepare-build-outputs
         shell: bash
         run: |
           if [[ "${{ inputs.pushImages }}" == "true" ]]; then
-              image_name="ghcr.io/${{ github.repository_owner }}/${{ matrix.image.name }}"
+              image_name="ghcr.io/${{ env.LOWERCASE_REPO_OWNER }}/${{ matrix.image.name }}"
               outputs="type=image,name=${image_name},push-by-digest=true,name-canonical=true,push=true"
           else
-              image_name="ghcr.io/${{ github.repository_owner }}/${{ matrix.image.name }}:zztesting"
+              image_name="ghcr.io/${{ env.LOWERCASE_REPO_OWNER }}/${{ matrix.image.name }}:zztesting"
               outputs="type=docker,name=${image_name},push=false"
           fi
           echo "image_name=${image_name}" >> $GITHUB_OUTPUT
           echo "outputs=${outputs}" >> $GITHUB_OUTPUT
 
       - name: Build Image
-        uses: docker/build-push-action@15560696de535e4014efeff63c48f16952e52dd1 # v6.2.0
+        uses: docker/build-push-action@v6
         id: build
         with:
           build-args: |-
             VERSION=${{ matrix.image.version }}
             REVISION=${{ github.sha }}
             CHANNEL=${{ matrix.image.channel }}
-          context: . # TODO: Use ${{ matrix.image.context }}, requires updates to all dockerfiles :-(
+          # TODO: Use ${{ matrix.image.context }}, requires updates to all dockerfiles :-(
+          context: .
           platforms: ${{ matrix.image.platform }}
           file: ${{ matrix.image.dockerfile }}
           outputs: ${{ steps.prepare-build-outputs.outputs.outputs }}
@@ -185,11 +199,10 @@ jobs:
           cache-to: type=gha,mode=max
           labels: |-
             org.opencontainers.image.title=${{ matrix.image.name }}
-            org.opencontainers.image.url=https://ghcr.io/${{ github.repository_owner }}/${{ matrix.image.name }}
-            org.opencontainers.image.source=https://github.com/${{ github.repository_owner }}/containers
+            org.opencontainers.image.url=https://ghcr.io/${{ env.LOWERCASE_REPO_OWNER }}/${{ matrix.image.name }}
             org.opencontainers.image.version=${{ matrix.image.version }}
             org.opencontainers.image.revision=${{ github.sha }}
-            org.opencontainers.image.vendor=${{ github.repository_owner }}
+            org.opencontainers.image.vendor=${{ env.LOWERCASE_REPO_OWNER }}
 
       - name: Run Goss Tests
         id: dgoss
@@ -221,9 +234,9 @@ jobs:
 
       - name: Upload Digest
         if: ${{ inputs.pushImages}}
-        uses: actions/upload-artifact@65462800fd760344b1a7b4382951275a0abb4808 # v4.3.3
+        uses: actions/upload-artifact@v4
         with:
-          name: ${{ matrix.image.name }}
+          name: ${{ matrix.image.name }}-${{ matrix.image.target_os }}-${{ matrix.image.target_arch }}
           path: /tmp/${{ matrix.image.name }}/*
           if-no-files-found: error
           retention-days: 1
@@ -240,10 +253,15 @@ jobs:
         image: ["${{ fromJSON(needs.prepare.outputs.matrices).images }}"]
       fail-fast: false
     steps:
+      - name: Lowercase repository owner
+        shell: bash
+        run: echo "LOWERCASE_REPO_OWNER=${GITHUB_REPOSITORY_OWNER,,}" >> $GITHUB_ENV
+
       - name: Download Digests
-        uses: actions/download-artifact@65a9edc5881444af0b9093a5e628f2fe47ea3b2e # v4.1.7
+        uses: actions/download-artifact@v4
         with:
-          name: ${{ matrix.image.name }}
+          pattern: "${{ matrix.image.name }}-{linux,darwin}-{amd64,arm64}"
+          merge-multiple: true
           path: /tmp/${{ matrix.image.name }}
 
       - name: Ensure all platforms were built
@@ -263,10 +281,10 @@ jobs:
           fi
 
       - name: Setup Docker Buildx
-        uses: docker/setup-buildx-action@d70bba72b1f3fd22344832f00baa16ece964efeb # v3.3.0
+        uses: docker/setup-buildx-action@v3
 
       - name: Login to GitHub Container Registry
-        uses: docker/login-action@0d4c9c5ea7693da7b068278f7b52bda2a190a446 # v3.2.0
+        uses: docker/login-action@v3
         with:
           registry: ghcr.io
           username: "${{ github.actor }}"
@@ -286,14 +304,14 @@ jobs:
           TAGS: ${{ toJSON(matrix.image.tags) }}
         shell: bash
         run: |
-          docker buildx imagetools create $(jq -cr '. | map("-t ghcr.io/${{ github.repository_owner }}/${{matrix.image.name}}:" + .) | join(" ")'  <<< "$TAGS") \
-              $(printf 'ghcr.io/${{ github.repository_owner }}/${{ matrix.image.name }}@sha256:%s ' *)
+          docker buildx imagetools create $(jq -cr '. | map("-t ghcr.io/${{ env.LOWERCASE_REPO_OWNER }}/${{matrix.image.name}}:" + .) | join(" ")'  <<< "$TAGS") \
+              $(printf 'ghcr.io/${{ env.LOWERCASE_REPO_OWNER }}/${{ matrix.image.name }}@sha256:%s ' *)
 
       - name: Inspect image
         id: inspect
         shell: bash
         run: |
-          docker buildx imagetools inspect ghcr.io/${{ github.repository_owner }}/${{ matrix.image.name }}:${{ matrix.image.tags[0] }}
+          docker buildx imagetools inspect ghcr.io/${{ env.LOWERCASE_REPO_OWNER }}/${{ matrix.image.name }}:${{ matrix.image.tags[0] }}
 
       - name: Build successful
         id: build-success
@@ -312,7 +330,7 @@ jobs:
           echo "color=0xFF0000" >> $GITHUB_OUTPUT
 
       - name: Send Discord Webhook
-        uses: sarisia/actions-status-discord@609229a5cc8b81e6de55f63e6cdd5e171a3c1895 # v1.14.4
+        uses: sarisia/actions-status-discord@v1
         if: ${{ always() && inputs.sendNotifications == 'true' }}
         with:
           webhook: ${{ secrets.DISCORD_WEBHOOK }}

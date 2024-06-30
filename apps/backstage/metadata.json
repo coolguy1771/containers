@@ -1,15 +1,16 @@
 {
-  "app": "ubi9",
-  "base": true,
+  "app": "backstage",
+  "base": false,
   "channels": [
     {
-      "name": "9",
+      "name": "1",
       "platforms": [
-        "linux/amd64"
+        "linux/amd64",
+        "linux/arm64"
       ],
       "stable": true,
       "tests": {
-        "enabled": true,
+        "enabled": false,
         "type": "cli"
       }
     }
