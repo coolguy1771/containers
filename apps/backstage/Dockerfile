@@ -1,5 +1,5 @@
 # Stage 1 - Create yarn install skeleton layer
-FROM docker.io/node:20-bookworm-slim AS packages
+FROM docker.io/node:22-bookworm-slim AS packages
 ARG TARGETPLATFORM
 ARG VERSION
 ARG CHANNEL
@@ -17,7 +17,7 @@ RUN apt-get update && apt-get install -y curl tar && \
     #find packages \! -name "package.json" -mindepth 2 -maxdepth 2 -exec rm -rf {} \+
 
 # Stage 2 - Install dependencies and build packages
-FROM docker.io/node:20-bookworm-slim AS build
+FROM docker.io/node:22-bookworm-slim AS build
 
 # Install isolate-vm dependencies, these are needed by the @backstage/plugin-scaffolder-backend.
 RUN --mount=type=cache,target=/var/cache/apt,sharing=locked \
@@ -52,7 +52,7 @@ RUN mkdir packages/backend/dist/skeleton packages/backend/dist/bundle \
     && tar xzf packages/backend/dist/bundle.tar.gz -C packages/backend/dist/bundle
 
 # Stage 3 - Build the actual backend image and install production dependencies
-FROM docker.io/node:20-bookworm-slim
+FROM docker.io/node:22-bookworm-slim
 
 # Install isolate-vm dependencies, these are needed by the @backstage/plugin-scaffolder-backend.
 RUN --mount=type=cache,target=/var/cache/apt,sharing=locked \
