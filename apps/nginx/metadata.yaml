@@ -2,7 +2,7 @@
 app: nginx
 semver: true
 channels:
-  - name: 1.26
+  - name: 1.27
     platforms: ["linux/amd64", "linux/arm64"]
     stable: true
     tests:
