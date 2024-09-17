@@ -99,7 +99,7 @@ RUN mkdir -p /etc/nginx \
     && touch /tmp/nginx.pid
 
 # copy in default nginx configs
-COPY /apps/nginx/nginx/ /etc/nginx/
+COPY nginx/ /etc/nginx/
 
 # set up the final container
 FROM gcr.io/distroless/static:nonroot
@@ -115,7 +115,7 @@ COPY --from=builder --chown=nonroot:nonroot /usr/sbin/nginx /usr/sbin/nginx
 COPY --from=builder --chown=nonroot:nonroot /usr/share/nginx/fastcgi_temp /usr/share/nginx/fastcgi_temp
 COPY --from=builder --chown=nonroot:nonroot /var/log/nginx /var/log/nginx
 COPY --from=builder --chown=nonroot:nonroot /var/www/html /var/www/html
-COPY --chown=nonroot:nonroot /apps/nginx/html/index.html /var/www/html/index.html
+COPY --chown=nonroot:nonroot html/index.html /var/www/html/index.html
 
 # listen on an unprivileged port
 EXPOSE 8080

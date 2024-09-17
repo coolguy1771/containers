@@ -1,0 +1,4 @@
+---
+file:
+  /usr/sbin/nginx:
+    exists: true
