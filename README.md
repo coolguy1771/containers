@@ -109,7 +109,7 @@ Each Image will be built with a `rolling` tag, along with tags specific to it's 
 Container | Channel | Image
 --- | --- | ---
 [dhcp-relay-master](https://github.com/coolguy1771/containers/pkgs/container/dhcp-relay-master) | master | ghcr.io/coolguy1771/dhcp-relay-master
-[nginx](https://github.com/coolguy1771/containers/pkgs/container/nginx) | 1.26 | ghcr.io/coolguy1771/nginx
+[nginx](https://github.com/coolguy1771/containers/pkgs/container/nginx) | stable | ghcr.io/coolguy1771/nginx
 
 
 ## Deprecations
