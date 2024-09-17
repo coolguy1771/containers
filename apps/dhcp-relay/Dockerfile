@@ -5,6 +5,7 @@ ARG VERSION
 ARG CHANNEL
 
 WORKDIR /ipxe/
+COPY files/patches /patches
 
 RUN apt-get -y update \
   && apt-get -y install --no-install-recommends build-essential genisoimage git isolinux liblzma-dev mtools syslinux ca-certificates \
@@ -13,6 +14,7 @@ RUN apt-get -y update \
 
 
 RUN git clone --branch master https://github.com/ipxe/ipxe.git /ipxe \
+  && git apply /patches/*.patch \
   && cd /ipxe/src \
   && make -j$(nproc) bin/undionly.kpxe \
   && make -j$(nproc) bin-x86_64-efi/ipxe.efi
