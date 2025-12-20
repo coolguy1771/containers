@@ -1,4 +1,4 @@
-FROM docker.io/library/alpine:3.22 as builder
+FROM docker.io/library/alpine:3.23 as builder
 
 ARG TARGETPLATFORM
 ARG VERSION
