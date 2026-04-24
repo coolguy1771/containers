@@ -1,4 +1,4 @@
-FROM docker.io/library/ubuntu:noble AS builder
+FROM docker.io/library/ubuntu:resolute AS builder
 
 ARG TARGETPLATFORM
 ARG VERSION
