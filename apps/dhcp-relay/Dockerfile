@@ -19,7 +19,7 @@ RUN git clone --branch master https://github.com/ipxe/ipxe.git /ipxe \
   && make -j$(nproc) bin/undionly.kpxe \
   && make -j$(nproc) bin-x86_64-efi/ipxe.efi
 
-FROM docker.io/alpine:3.23.4
+FROM docker.io/alpine:3.24.1
 
 RUN apk -U add dnsmasq curl
 
