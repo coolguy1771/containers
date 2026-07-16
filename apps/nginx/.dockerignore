@@ -1,0 +1,13 @@
+.git
+.gitignore
+*.md
+README*
+LICENSE*
+Makefile
+*.lock
+node_modules
+.idea
+.vscode
+*.pyc
+__pycache__
+*.log
