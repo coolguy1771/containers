@@ -2,6 +2,10 @@
 # yaml-language-server: $schema=https://json.schemastore.org/github-workflow.json
 name: Scheduled Release
 
+permissions:
+  contents: read
+  packages: write
+
 concurrency:
   group: container-release
   cancel-in-progress: false
@@ -32,9 +36,6 @@ jobs:
     needs: simple-checks
     uses: ./.github/workflows/build-images.yaml
     secrets: inherit
-    permissions:
-      contents: read
-      packages: write
     with:
       appsToBuild: ${{ inputs.appsToBuild }}
       force: ${{ inputs.force == true }}
