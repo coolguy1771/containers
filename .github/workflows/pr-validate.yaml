@@ -7,21 +7,25 @@ on:
     branches: ["main"]
     types: ["opened", "synchronize", "reopened"]
 
+permissions:
+  contents: read
+  packages: write
+
 concurrency:
   group: ${{ github.head_ref }}-pr-validate
   cancel-in-progress: true
 
 jobs:
   simple-checks:
-    uses: coolguy1771/containers/.github/workflows/simple-checks.yaml@main
+    uses: ./.github/workflows/simple-checks.yaml
 
   get-changed-images:
-    uses: coolguy1771/containers/.github/workflows/get-changed-images.yaml@main
+    uses: ./.github/workflows/get-changed-images.yaml
 
   build-images:
     needs: ["simple-checks", "get-changed-images"]
     if: ${{ needs.get-changed-images.outputs.addedOrModified == 'true' }}
-    uses: coolguy1771/containers/.github/workflows/build-images.yaml@main
+    uses: ./.github/workflows/build-images.yaml
     secrets: inherit
     with:
       appsToBuild: "${{ needs.get-changed-images.outputs.addedOrModifiedImages }}"

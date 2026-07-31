@@ -32,7 +32,7 @@ RUN git clone -j$(nproc) -b "${OPENSSL_VER}" https://github.com/openssl/openssl.
 # download zlib
 WORKDIR /src/zlib
 ARG ZLIB_VER=1.3.1
-RUN curl -sL -O "https://www.zlib.net/zlib-${ZLIB_VER}.tar.gz" \
+RUN curl -sL -O "https://github.com/madler/zlib/releases/download/v${ZLIB_VER}/zlib-${ZLIB_VER}.tar.gz" \
     && tar xzf "zlib-${ZLIB_VER}.tar.gz"
 
 # download brotli module

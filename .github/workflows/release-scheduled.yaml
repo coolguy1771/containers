@@ -2,6 +2,10 @@
 # yaml-language-server: $schema=https://json.schemastore.org/github-workflow.json
 name: Scheduled Release
 
+permissions:
+  contents: read
+  packages: write
+
 concurrency:
   group: container-release
   cancel-in-progress: false
@@ -25,16 +29,13 @@ on:
 jobs:
   simple-checks:
     name: Simple Checks
-    uses: coolguy1771/containers/.github/workflows/simple-checks.yaml@main
+    uses: ./.github/workflows/simple-checks.yaml
 
   build-images:
     name: Build Images
     needs: simple-checks
-    uses: coolguy1771/containers/.github/workflows/build-images.yaml@main
+    uses: ./.github/workflows/build-images.yaml
     secrets: inherit
-    permissions:
-      contents: read
-      packages: write
     with:
       appsToBuild: ${{ inputs.appsToBuild }}
       force: ${{ inputs.force == true }}

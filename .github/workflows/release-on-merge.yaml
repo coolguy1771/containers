@@ -2,6 +2,10 @@
 # yaml-language-server: $schema=https://json.schemastore.org/github-workflow.json
 name: Release on Merge
 
+permissions:
+  contents: read
+  packages: write
+
 concurrency:
   group: container-release
   cancel-in-progress: false
@@ -18,16 +22,16 @@ on:
 
 jobs:
   simple-checks:
-    uses: coolguy1771/containers/.github/workflows/simple-checks.yaml@main
+    uses: ./.github/workflows/simple-checks.yaml
 
   get-changed-images:
     needs: ["simple-checks"]
-    uses: coolguy1771/containers/.github/workflows/get-changed-images.yaml@main
+    uses: ./.github/workflows/get-changed-images.yaml
 
   build-images:
     needs: ["simple-checks", "get-changed-images"]
     if: ${{ needs.get-changed-images.outputs.addedOrModified == 'true' }}
-    uses: coolguy1771/containers/.github/workflows/build-images.yaml@main
+    uses: ./.github/workflows/build-images.yaml
     secrets: inherit
     with:
       appsToBuild: "${{ needs.get-changed-images.outputs.addedOrModifiedImages }}"
