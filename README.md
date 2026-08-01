@@ -1,9 +1,4 @@
-<!---
-NOTE: AUTO-GENERATED FILE
-to edit this file, instead edit its template at: ./github/scripts/templates/README.md.j2
--->
 <div align="center">
-
 
 ## Containers
 
@@ -13,116 +8,142 @@ _An opinionated collection of container images_
 
 <div align="center">
 
-![GitHub Repo stars](https://img.shields.io/github/stars/coolguy1771/containers?style=for-the-badge)
-![GitHub forks](https://img.shields.io/github/forks/coolguy1771/containers?style=for-the-badge)
-![GitHub Workflow Status (with event)](https://img.shields.io/github/actions/workflow/status/coolguy1771/containers/release-scheduled.yaml?style=for-the-badge&label=Scheduled%20Release)
+![GitHub Repo stars](https://img.shields.io/github/stars/home-operations/containers?style=for-the-badge)
+![GitHub forks](https://img.shields.io/github/forks/home-operations/containers?style=for-the-badge)
+![GitHub Workflow Status (with event)](https://img.shields.io/github/actions/workflow/status/home-operations/containers/release.yaml?style=for-the-badge&label=Release)
 
 </div>
 
-Welcome to my container images, if looking for a container start by [browsing the GitHub Packages page for this repo's packages](https://github.com/coolguy1771?tab=packages&repo_name=containers).
+Welcome to our container images! If you are looking for a container, start by [browsing the GitHub Packages page for this repository's packages](https://github.com/orgs/home-operations/packages?repo_name=containers).
 
-## Mission statement
+## Mission Statement
 
-The goal of this project is to support [semantically versioned](https://semver.org/), [rootless](https://rootlesscontaine.rs/), and [multiple architecture](https://www.docker.com/blog/multi-arch-build-and-images-the-simple-way/) containers for various applications.
+Our goal is to provide [semantically versioned](https://semver.org/), [rootless](https://rootlesscontaine.rs/), and [multi-architecture](https://www.docker.com/blog/multi-arch-build-and-images-the-simple-way/) containers for various applications.
 
-It also adheres to a [KISS principle](https://en.wikipedia.org/wiki/KISS_principle), logging to stdout, [one process per container](https://testdriven.io/tips/59de3279-4a2d-4556-9cd0-b444249ed31e/), no [s6-overlay](https://github.com/just-containers/s6-overlay) and all images are built on top of [Alpine](https://hub.docker.com/_/alpine) or [Ubuntu](https://hub.docker.com/_/ubuntu).
+We adhere to the [KISS principle](https://en.wikipedia.org/wiki/KISS_principle), logging to stdout, maintaining [one process per container](https://testdriven.io/tips/59de3279-4a2d-4556-9cd0-b444249ed31e/), avoiding tools like [s6-overlay](https://github.com/just-containers/s6-overlay), and building all images on top of [Alpine](https://hub.docker.com/_/alpine) or [Ubuntu](https://hub.docker.com/_/ubuntu).
 
-## Tag immutability
+## Features
 
-The containers built here do not use immutable tags, as least not in the more common way you have seen from [linuxserver.io](https://fleet.linuxserver.io/) or [Bitnami](https://bitnami.com/stacks/containers).
+### Tag Immutability
 
-We do take a similar approach but instead of appending a `-ls69` or `-r420` prefix to the tag we instead insist on pinning to the sha256 digest of the image, while this is not as pretty it is just as functional in making the images immutable.
+Containers built here do not use immutable tags in the traditional sense, as seen with [linuxserver.io](https://fleet.linuxserver.io/) or [Bitnami](https://bitnami.com/stacks/containers). Instead, we insist on pinning to the `sha256` digest of the image. While this approach is less visually appealing, it ensures functionality and immutability.
 
-| Container                                          | Immutable |
-|----------------------------------------------------|-----------|
-| `ghcr.io/coolguy1771/sonarr:rolling`                   | ❌         |
-| `ghcr.io/coolguy1771/sonarr:3.0.8.1507`                | ❌         |
-| `ghcr.io/coolguy1771/sonarr:rolling@sha256:8053...`    | ✅         |
-| `ghcr.io/coolguy1771/sonarr:3.0.8.1507@sha256:8053...` | ✅         |
+| Container                                                        | Immutable |
+| ---------------------------------------------------------------- | --------- |
+| `ghcr.io/home-operations/home-assistant:rolling`                 | ❌        |
+| `ghcr.io/home-operations/home-assistant:2025.5.1`                | ❌        |
+| `ghcr.io/home-operations/home-assistant:rolling@sha256:8053...`  | ✅        |
+| `ghcr.io/home-operations/home-assistant:2025.5.1@sha256:8053...` | ✅        |
 
-_If pinning an image to the sha256 digest, tools like [Renovate](https://github.com/renovatebot/renovate) support updating the container on a digest or application version change._
+_If pinning an image to the `sha256` digest, tools like [Renovate](https://github.com/renovatebot/renovate) can update containers based on digest or version changes._
 
-## Rootless
+### Rootless
 
-To run these containers as non-root make sure you update your configuration to the user and group you want.
+By default the majority of our containers run as a non-root user (`65534:65534`), you are able to change the user/group by updating your configuration files.
 
-### Docker compose
+#### Docker Compose
 
 ```yaml
-networks:
-  sonarr:
-    name: sonarr
-    external: true
 services:
-  sonarr:
-    image: ghcr.io/coolguy1771/sonarr:3.0.8.1507
-    container_name: sonarr
-    user: 65534:65534
-    # ...
+    home-assistant:
+        image: ghcr.io/home-operations/home-assistant:2025.5.1@sha256:516ae5c85089b3f2960cf2a21dc3c105356969499964fabf0b0358e5f3a7e0a2
+        container_name: home-assistant
+        user: 1000:1000 # The data volume permissions must match this user:group
+        read_only: true # May require mounting in additional dirs as tmpfs
+        tmpfs:
+            - /tmp:rw
+        # ...
 ```
 
-### Kubernetes
+#### Kubernetes
 
 ```yaml
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: sonarr
+  name: home-assistant
 # ...
 spec:
   # ...
   template:
-    # ...
     spec:
       # ...
       securityContext:
-        runAsUser: 65534
-        runAsGroup: 65534
-        fsGroup: 65534
-        fsGroupChangePolicy: OnRootMismatch
+        runAsUser: 1000
+        runAsGroup: 1000
+        fsGroup: 1000 # Requires CIS support
+      volumes:
+        - name: tmp
+          emptyDir: {}
 # ...
 ```
 
-## Passing arguments to a application
+### Passing Arguments to Applications
 
-Some applications do not support defining configuration via environment variables and instead only allow certain config to be set in the command line arguments for the app. To circumvent this, for applications that have an `entrypoint.sh` read below.
+Some applications only allow certificate configuration via command-line arguments rather than environment variables. For such cases, refer to the Kubernetes documentation on [command and arguments for a container](https://kubernetes.io/docs/tasks/configure-pod-container/define-command-and-argument-container/). Then, specify the described arguments as shown below:
 
-1. First read the Kubernetes docs on [defining command and arguments for a Container](https://kubernetes.io/docs/tasks/inject-data-application/define-command-argument-container/).
-2. Look up the documentation for the application and find a argument you would like to set.
-3. Set the argument in the `args` section, be sure to include `entrypoint.sh` as the first arg and any application specific arguments thereafter.
+```sh
+args:
+  - ---port
+  - "8080"
+```
 
-    ```yaml
-    args:
-      - /entrypoint.sh
-      - --port
-      - "8080"
-    ```
+### Configuration Volume
 
-## Configuration volume
+For applications requiring persistent configuration data, the configuration volume is hardcoded to `/config` within the container. In most cases, this path cannot be changed.
 
-For applications that need to have persistent configuration data the config volume is hardcoded to `/config` inside the container. This is not able to be changed in most cases.
+### Verify Image Signature
 
-## Available Images
+These container images are signed using the [attest-build-protocol](https://github.com/actions/attest-build-protocol) action.
 
-Each Image will be built with a `rolling` tag, along with tags specific to it's version. Available Images Below
+To verify that the image was built by GitHub CI, use the following command:
 
-Container | Channel | Image
---- | --- | ---
-[dhcp-relay-master](https://github.com/coolguy1771/containers/pkgs/container/dhcp-relay-master) | master | ghcr.io/coolguy1771/dhcp-relay-master
-[nginx](https://github.com/coolguy1771/containers/pkgs/container/nginx) | stable | ghcr.io/coolguy1771/nginx
+```sh
+gh attest verify --repo home-operations/containers oci:///ghcr.io/home-operations/${APP}:${TAG}
+```
 
+or by using [cosign](https://github.com/sigstore/cosign):
 
-## Deprecations
+```sh
+cosign verify-attestation --new-bundle-format --type slsaprovenance1 \
+    --certificate-oidc-issuer "https://token.actions.githubusercontent.com" \
+    --certificate-identity "zhttps://github.com/home-operations/containers/.github/workflows/app-builder.yaml@refs/heads/main" \
+    ghcr.io/home-operations/${APP}:${TAG}
+```
 
-Containers here can be **deprecated** at any point, this could be for any reason described below.
+### Escalated Features
 
-1. The upstream application is **no longer actively developed**
-2. The upstream application has an **official upstream container** that follows closely to the mission statement described here
-3. The upstream application has been **replaced with a better alternative**
-4. The **maintenance burden** of keeping the container here **is too bothersome**
+This repository does not support multiple "chains" for the same application. For example:
 
-**Note**: Deprecated containers will remained published to this repo for 6 months after which they will be pruned.
+- *Prowlarr*, *Radarr*, *Lidarr*, and *Sonarr* only publish the *developer* branch, not the *master* (stable) branch.
+- *BitTorrent* is only published with *LibTorrent 2.x*. See [this issue](https://github.com/home-operations/containers/issues/848) for more information.
+
+This approach ensures consistency and focuses on streamlined builds.
+
+## Contributing
+
+We encourage the use of official upstream container images whenever possible. However, contributing to this repository might make sense if:
+
+- The upstream application is *actively maintained*.
+- *And* one of the following applies:
+  - no official image exists.
+  - the official image does not support *multi-architecture builds*.
+  - the official image uses tools like *s6-overlay*, *gosu*, or other non-convensional initialization methods.
+
+Do not tag releases.
+
+This repository draws inspiration and ideas from the home-ops community, [hotio.dev](https://hotio.dev/), and [linuxserver.io](https://www.linuxserver.io/) contributors.
+
+## Specifications
+
+This repository may be deprecated for the following reasons:
+
+1. The upstream application is *no longer actively maintained*.
+2. An *official container image exists* that aligns with this repository's mission statement.
+3. The *main maintainer burden* is unsustainable, such as frequent build failures or instability.
+
+*Note:* Deprecated containers will be announced with a release and remain available in the registry for 6 months before removal.
 
 ## Credits
 
-A lot of inspiration and ideas are thanks to the hard work of [hotio.dev](https://hotio.dev/) and [linuxserver.io](https://www.linuxserver.io/) contributors.
+This repository draws inspiration and ideas from the home-ops community, [hotio.dev](https://hotio.dev/), and [linuxserver.io](https://www.linuxserver.io/) contributors.
